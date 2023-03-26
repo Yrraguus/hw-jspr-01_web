@@ -1,4 +1,4 @@
-// https://github.com/netology-code/jspr-homeworks/tree/master/01_web
+// https://github.com/netology-code/jspr-homeworks/tree/master/02_forms
 
 package org.example;
 
@@ -13,6 +13,25 @@ public class Main {
 
     public static void main(String[] args) {
         final var server = new Server();
+
+        server.addHandler("GET", "/", (request, responseStream) -> {
+            final var filePath = Path.of(".", "public", "/forms.html");
+            final var mimeType = Files.probeContentType(filePath);
+            final var length = Files.size(filePath);
+            responseStream.write((
+                    "HTTP/1.1 200 OK\r\n" +
+                            "Content-Type: " + mimeType + "\r\n" +
+                            "Content-Length: " + length + "\r\n" +
+                            "Connection: close\r\n" +
+                            "\r\n"
+            ).getBytes());
+            Files.copy(filePath, responseStream);
+            responseStream.flush();
+            System.out.println("QPs: " + request.getQueryParams());
+            System.out.println("Login: " + request.getQueryParam("login"));
+            System.out.println("Password: " + request.getQueryParam("password"));
+        });
+
         for (String path :
                 validPaths) {
             server.addHandler("GET", path, (request, responseStream) -> {
